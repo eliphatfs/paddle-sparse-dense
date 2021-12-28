@@ -1,0 +1,9 @@
+temp
+__pycache__
+.spyproject
+bin
+obj
+*.dll
+build
+dist
+*.egg-info
