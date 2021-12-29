@@ -138,6 +138,23 @@ class TestSparseDense(unittest.TestCase):
                 numpy.multiply(A, B[0]), Ap.mul(Bp[0]).dense()
             ))
 
+    def test_unbatch_cornercase(self):
+        A = self.coo_from_npdata(
+            [1, 2],
+            numpy.array([0]), numpy.array([0]), numpy.array([1.])
+        )
+        B = self.coo_from_npdata(
+            [2, 1],
+            numpy.array([1]), numpy.array([0]), numpy.array([1.])
+        )
+        b1, i1 = paddle_sparse_dense.batching.batch([A, A])
+        b2, i2 = paddle_sparse_dense.batching.batch([B, B])
+        prs = paddle_sparse_dense.batching.unbatch(
+            paddle_sparse_dense.spgemm.spgemm_rowmp_coo_csr_coo(b1, b2.csr()),
+            paddle_sparse_dense.batching.batch_info_dot(i1, i2)
+        )
+        self.assertAlmostEqual(prs[0].dense().item(), 0.)
+
     def test_batch_spgemm(self):
         batcher_1 = []
         batcher_2 = []

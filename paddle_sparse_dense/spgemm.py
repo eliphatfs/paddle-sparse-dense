@@ -12,6 +12,13 @@ def spgemm_rowmp_coo_csr_coo(coo: COO, csr: CSR) -> COO:
     rowend = paddle.gather(ext_ptr, coo.col + 1, axis=0)
     rowstart = paddle.gather(ext_ptr, coo.col, axis=0)
     rowsize = rowend - rowstart
+    if rowsize.sum() == 0:
+        return COO(
+            [coo.shape[0], csr.shape[-1]],
+            paddle.zeros_like(csr.ptr[:1]),
+            paddle.zeros_like(csr.ptr[:1]),
+            paddle.zeros_like(csr.data[:1]),
+        )
     scatter_i = repeat_interleave(coo.row, rowsize)
     msg_a = repeat_interleave(coo.data, rowsize)
     mat_b = paddle.zeros([len(msg_a)], dtype=rowstart.dtype)

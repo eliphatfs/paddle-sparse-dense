@@ -52,11 +52,16 @@ def unbatch(matrix: COO, info: BatchingInfo) -> Sequence[COO]:
     for seg_end, br, bc, shape in zip(ofs, ofsr, ofsc, info.shapes):
         seg_end = int(seg_end)
         bisect_end = bisect.bisect_left(sr, seg_end, begin)
-        ms.append(COO(
-            shape.tolist(),
-            sr[begin: bisect_end] - br,
-            sc[begin: bisect_end] - bc,
-            sd[begin: bisect_end]
-        ))
+        if begin == bisect_end:
+            z = paddle.to_tensor([0], dtype=sr.dtype)
+            v = paddle.to_tensor([0], dtype=sd.dtype)
+            ms.append(COO(shape.tolist(), z, z, v))
+        else:
+            ms.append(COO(
+                shape.tolist(),
+                sr[begin: bisect_end] - br,
+                sc[begin: bisect_end] - bc,
+                sd[begin: bisect_end]
+            ))
         begin = bisect_end
     return ms
