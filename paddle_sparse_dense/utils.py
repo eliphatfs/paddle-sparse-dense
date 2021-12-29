@@ -32,7 +32,7 @@ def repeat_interleave(src: paddle.Tensor, repeat: Union[paddle.Tensor, int], axi
 def cum_repeat_0(src: paddle.Tensor, cumptr: paddle.Tensor):
     idx = paddle.scatter(
         paddle.zeros([cumptr[-1]], dtype=cumptr.dtype),
-        cumptr, paddle.ones_like(cumptr),
+        cumptr[:-1], paddle.ones_like(cumptr[:-1]),
         overwrite=False
     )
     visit = paddle.cumsum(idx)
