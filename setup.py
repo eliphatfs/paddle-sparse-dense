@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="paddle-sparse-dense", # Replace with your own username
-    version="0.0.2",
+    version="0.0.3",
     author="flandre.info",
     author_email="flandre@scarletx.cn",
     description="Sparse-dense operators for paddle.",
