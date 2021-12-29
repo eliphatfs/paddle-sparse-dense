@@ -1,4 +1,3 @@
-from paddle.tensor.logic import allclose
 import paddle_sparse_dense
 import paddle
 import numpy
