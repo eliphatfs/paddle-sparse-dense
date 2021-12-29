@@ -25,6 +25,50 @@ class COO:
         self.data = data
         self.shape = shape
 
+    def scale(self, s):
+        """
+        Scalar multiplication.
+        """
+        return COO(self.row, self.col, self.data * s)
+
+    def mul(self, ov: paddle.Tensor):
+        """
+        Element-wise multiplication. Supports broadcast on v.
+        Equivalent to self.dot(diag(v)) if v is a vector.
+        [m, k], [m or 1, k or 1] or [k] -> [m, k]
+        """
+        v = ov
+        if v.dim() == 1:
+            v = v.reshape([1, -1])
+        assert v.dim() == 2, [
+            "COO.mul requires at least 1-dim and at most 2-dims for operand, got shape",
+            v.shape
+        ]
+        assert self.shape[0] == v.shape[0] or v.shape[0] == 1, [
+            "COO mul shape mismatch", self.shape, ov.shape
+        ]
+        assert self.shape[1] == v.shape[1] or v.shape[1] == 1, [
+            "COO mul shape mismatch", self.shape, ov.shape
+        ]
+        i = self.row
+        if v.shape[0] == 1:
+            i = paddle.zeros_like(i)
+        j = self.col
+        if v.shape[1] == 1:
+            j = paddle.zeros_like(j)
+        g = paddle.gather_nd(v, paddle.stack([i, j], axis=-1))
+        return COO(self.shape, self.row, self.col, self.data * g)
+
+    def add(self, coo: 'COO'):
+        assert self.shape[0] == coo.shape[0], ["COO add shape mismatch", self.shape, coo.shape]
+        assert self.shape[1] == coo.shape[1], ["COO add shape mismatch", self.shape, coo.shape]
+        return COO(
+            self.shape,
+            paddle.concat([self.row, coo.row]),
+            paddle.concat([self.col, coo.col]),
+            paddle.concat([self.data, coo.data])
+        )
+
     def dot(self, v: paddle.Tensor):
         """
         Dot product on the second dim and v's first dim.

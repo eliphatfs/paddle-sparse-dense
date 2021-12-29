@@ -1,3 +1,4 @@
+from paddle.tensor.logic import allclose
 import paddle_sparse_dense
 import paddle
 import numpy
@@ -108,7 +109,34 @@ class TestSparseDense(unittest.TestCase):
             pr = paddle_sparse_dense.spgemm.spgemm_rowmp_coo_csr_coo(
                 Ap, Bp.csr()
             ).dense()
-            self.assertTrue(numpy.allclose(gt, pr), "n, k, m = %d, %d, %d" % (n, k, m))
+            self.assertTrue(
+                numpy.allclose(gt, pr), "n, k, m = %d, %d, %d" % (n, k, m)
+            )
+
+    def test_coo_add(self):
+        for (r1, c1, d1, n1, k1), (r2, c2, d2, n2, k2) in zip(
+            self.random_coo_gen(), self.random_coo_gen()
+        ):
+            A = sp.coo_matrix((d1, (r1, c1)), shape=[n1, k1]).todense()
+            B = sp.coo_matrix((d2, (r2, c2)), shape=[n2, k2]).todense()
+            Ap = self.coo_from_npdata([n1, k1], r1, c1, d1)
+            Bp = self.coo_from_npdata([n2, k2], r2, c2, d2)
+            self.assertTrue(numpy.allclose(A + B, Ap.add(Bp).dense()))
+
+    def test_coo_mul(self):
+        for (r1, c1, d1, n1, k1), (r2, c2, d2, n2, k2) in zip(
+            self.random_coo_gen(), self.random_coo_gen()
+        ):
+            A = sp.coo_matrix((d1, (r1, c1)), shape=[n1, k1]).todense()
+            B = sp.coo_matrix((d2, (r2, c2)), shape=[n2, k2]).todense()
+            Ap = self.coo_from_npdata([n1, k1], r1, c1, d1)
+            Bp = paddle.Tensor(B)
+            self.assertTrue(numpy.allclose(
+                numpy.multiply(A, B), Ap.mul(Bp).dense()
+            ))
+            self.assertTrue(numpy.allclose(
+                numpy.multiply(A, B[0]), Ap.mul(Bp[0]).dense()
+            ))
 
 
 if __name__ == "__main__":
