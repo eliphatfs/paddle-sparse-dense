@@ -77,7 +77,7 @@ class COO:
         assert self.shape[1] == len(v), ["Shape mismatch: ", self.shape, len(v)]
         result = paddle.zeros([self.shape[0]] + [*v.shape[1:]], dtype=v.dtype)
         return paddle.scatter(
-            result, self.row, v[self.col] * self.data.reshape(
+            result, self.row, paddle.gather(v, self.col, axis=0) * self.data.reshape(
                 [-1] + [1] * (len(v.shape) - 1)
             ), overwrite=False
         )
@@ -90,8 +90,8 @@ class COO:
             overwrite=False
         )
         ras = paddle.argsort(self.row)
-        nidx = self.col[ras]
-        ndata = self.data[ras]
+        nidx = paddle.gather(self.col, ras, axis=0)
+        ndata = paddle.gather(self.data, ras, axis=0)
         return CSR(
             self.shape, paddle.cumsum(rcn), nidx, ndata
         )
@@ -104,8 +104,8 @@ class COO:
             overwrite=False
         )
         cas = paddle.argsort(self.col)
-        nidx = self.row[cas]
-        ndata = self.data[cas]
+        nidx = paddle.gather(self.row, cas, axis=0)
+        ndata = paddle.gather(self.data, cas, axis=0)
         return CSC(
             self.shape, paddle.cumsum(ccn), nidx, ndata
         )
