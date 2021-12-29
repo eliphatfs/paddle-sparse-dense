@@ -7,7 +7,7 @@ It only needs `paddle`. It is tested on `paddle >= 2.1.0, <= 2.2.0rc1`, but shou
 ## Usage
 Most functions are implemented within classes that encapsulate sparse formats: `COO`, `CSR` and `CSC`.
 
-Cross-format operators are implemented in dedicated sub-modules: `spgemm`.
+Cross-format operators are implemented in dedicated sub-modules: `spgemm` and `batching`.
 
 ## Supported operations
 
@@ -35,6 +35,18 @@ coo * dense -> coo (equiv. coo @ diag(vec) if dense is a vector)
 ### SpGEMM (Sparse-Sparse Matmul)
 ```plain
 coo, csr -> coo (via row-wise mixed product)
+```
+
+### Batching and unbatching
+Many batched operations can be efficiently represented via operation on block-diagonal sparse matrix. We also provide batching and unbatching operations for homogeneously-shaped sparse matrices.
+
+For COO matrices, this is constructing (destructing) a block-diagonal COO matrix given (into) several small COO matrices.
+
+If you know the expected shapes of matrices after unbatching you may construct it explicitly by calling `BatchingInfo(shapes: [n, 2] numpy array of int)`. Otherwise: 1) most operations keep shapes, and there is no need to change BatchingInfo; 2) `batch_info_dot` is provided, for merging info between two batches of matrices that go through `SpGeMM` to obtain a final batch of matrices.
+
+```plain
+batch [coo] -> coo
+unbatch coo -> [coo]
 ```
 
 ## Installation

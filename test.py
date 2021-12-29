@@ -138,6 +138,28 @@ class TestSparseDense(unittest.TestCase):
                 numpy.multiply(A, B[0]), Ap.mul(Bp[0]).dense()
             ))
 
+    def test_batch_spgemm(self):
+        batcher_1 = []
+        batcher_2 = []
+        gts = []
+        for r1, c1, d1, r2, c2, d2, n, k, m in self.random_coo_pair_gen():
+            A = sp.coo_matrix((d1, (r1, c1)), shape=[n, k]).todense()
+            B = sp.coo_matrix((d2, (r2, c2)), shape=[k, m]).todense()
+            Ap = self.coo_from_npdata([n, k], r1, c1, d1)
+            Bp = self.coo_from_npdata([k, m], r2, c2, d2)
+            gt = numpy.matmul(A, B)
+            batcher_1.append(Ap)
+            batcher_2.append(Bp)
+            gts.append(gt)
+            break
+        b1, i1 = paddle_sparse_dense.batching.batch(batcher_1)
+        b2, i2 = paddle_sparse_dense.batching.batch(batcher_2)
+        prs = paddle_sparse_dense.batching.unbatch(
+            paddle_sparse_dense.spgemm.spgemm_rowmp_coo_csr_coo(b1, b2.csr()),
+            paddle_sparse_dense.batching.batch_info_dot(i1, i2)
+        )
+        for gt, pr in zip(gts, prs):
+            self.assertTrue(numpy.allclose(gt, pr.dense()))
 
 if __name__ == "__main__":
     unittest.main()
