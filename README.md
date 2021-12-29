@@ -1,6 +1,8 @@
 # Sparse-dense operators implementation for Paddle
 This module implements `coo`, `csc` and `csr` matrix formats and their inter-ops with dense matrices.
 
+Feel free to open an issue when you feel that something is incorrect.
+
 ## Requirements
 It only needs `paddle`. It is tested on `paddle >= 2.1.0, <= 2.2.0rc1`, but should work for any recent paddle versions.
 
@@ -50,7 +52,7 @@ unbatch coo -> [coo]
 ```
 
 ## Installation
-The project doesn't have any stable release yet. You may install it from this git repository directly.
+`pip install paddle-sparse-dense`
 
 ## Caveats
 Currently all stuff is implemented with pure python and no CUDA code has been written. As a result, the routines have good run-time performance in general but have a memory overhead of order `O(nnz/n)`.
