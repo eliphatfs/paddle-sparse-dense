@@ -66,6 +66,12 @@ class COO:
             self.shape, paddle.cumsum(ccn), nidx, ndata
         )
 
+    def dense(self):
+        return paddle.scatter_nd(
+            paddle.stack([self.row, self.col], axis=-1),
+            self.data, self.shape
+        )
+
 
 class CSR:
     def __init__(self, shape, ptr, idx, data) -> None:
