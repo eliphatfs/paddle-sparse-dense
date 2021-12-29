@@ -1,2 +1,2 @@
 from .sparse import COO, CSR, CSC
-from . import utils
+from . import utils, spgemm

@@ -8,13 +8,13 @@ It only needs `paddle`. It is tested on `paddle >= 2.1.0, <= 2.2.0rc1`, but shou
 
 ### Conversion
 ```plain
-coo -> csc, csr
+coo -> csc, csr, dense
 csc -> coo
 csr -> coo
 ```
 
 ### Batch MVP (Matrix-Vector Product) or SpMM (Sparse-Dense Matmul)
-Note that in this library, the batch dimensions are appended instead of prepended to the dot dimension (which is just regular matmul when there is one batch dimension). Use `utils.swap_axes` or `paddle.transpose` when necessary.
+Note that in this library, the batch dimensions are appended instead of prepended to the dot dimension (which is just regular matmul when there is only one batch dimension). Use `utils.swap_axes` or `paddle.transpose` when necessary.
 ```plain
 coo, dense -> dense
 ```
@@ -22,8 +22,13 @@ coo, dense -> dense
 ### Point-wise
 TBD
 
-### Sp-Sp Matmul with dense outputs
-TBD
+### SpGEMM (Sparse-Sparse Matmul)
+```plain
+coo, csr -> coo (via row-wise mixed product)
+```
 
 ## Installation
-No release version yet. You may install from this git repository.
+The project doesn't have any stable release yet. You may install it from this git repository directly.
+
+## Caveats
+Currently all stuff is implemented with pure python and no CUDA code has been written. As a result, the routines have good run-time performance in general but have a memory overhead of order `O(nnz/n)`.
