@@ -3,7 +3,7 @@ on: [push]
 jobs:
   test:
     name: Test paddle ${{ matrix.paddle_v }}
-    runs-on: ubuntu-18.04
+    runs-on: windows-2019
     strategy:
       matrix:
         paddle_v: [2.1.0, 2.1.3, 2.2.1]
