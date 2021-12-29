@@ -3,6 +3,7 @@ import paddle
 import numpy
 from .sparse import COO
 import bisect
+import itertools
 
 
 class BatchingInfo:
@@ -45,14 +46,16 @@ def unbatch(matrix: COO, info: BatchingInfo) -> Sequence[COO]:
     sc = paddle.gather(matrix.col, ras, 0)
     sd = paddle.gather(matrix.data, ras, 0)
     ofs = numpy.cumsum(info.shapes[:, 0])
+    ofsr = itertools.chain([0], ofs)
+    ofsc = itertools.chain([0], numpy.cumsum(info.shapes[:, 1]))
     begin = 0
-    for seg_end, shape in zip(ofs, info.shapes):
+    for seg_end, br, bc, shape in zip(ofs, ofsr, ofsc, info.shapes):
         seg_end = int(seg_end)
         bisect_end = bisect.bisect_left(sr, seg_end, begin)
         ms.append(COO(
             shape.tolist(),
-            sr[begin: bisect_end],
-            sc[begin: bisect_end],
+            sr[begin: bisect_end] - br,
+            sc[begin: bisect_end] - bc,
             sd[begin: bisect_end]
         ))
         begin = bisect_end

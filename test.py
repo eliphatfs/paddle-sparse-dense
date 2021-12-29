@@ -151,7 +151,6 @@ class TestSparseDense(unittest.TestCase):
             batcher_1.append(Ap)
             batcher_2.append(Bp)
             gts.append(gt)
-            break
         b1, i1 = paddle_sparse_dense.batching.batch(batcher_1)
         b2, i2 = paddle_sparse_dense.batching.batch(batcher_2)
         prs = paddle_sparse_dense.batching.unbatch(
