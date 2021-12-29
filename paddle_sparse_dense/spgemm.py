@@ -21,13 +21,13 @@ def spgemm_rowmp_coo_csr_coo(coo: COO, csr: CSR) -> COO:
         )
     scatter_i = repeat_interleave(coo.row, rowsize)
     msg_a = repeat_interleave(coo.data, rowsize)
-    mat_b = paddle.zeros([len(msg_a)], dtype=rowstart.dtype)
+    mat_b = paddle.zeros([len(msg_a) + 1], dtype=rowstart.dtype)
     scatter_k = repeat_interleave(rowstart, rowsize)
     ofs_b = paddle.cumsum(1 + paddle.scatter(
         paddle.zeros_like(mat_b), paddle.cumsum(rowsize, axis=0),
         -rowsize,
         overwrite=False
-    ), axis=0) - 1
+    ), axis=0)[:-1] - 1
     ofs_m = scatter_k + ofs_b
     scatter_j = paddle.gather(csr.idx, ofs_m, axis=0)
     msg_b = paddle.gather(csr.data, ofs_m, axis=0)
